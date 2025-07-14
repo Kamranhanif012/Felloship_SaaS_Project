@@ -51,7 +51,15 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         const onSpeechStart = () => setIsSpeaking(true);
         const onSpeechEnd = () => setIsSpeaking(false);
 
-        const onError = (error: Error) => console.log('Error', error);
+        // Remove transport-state-changed handler
+        // Enhance onError to handle disconnection
+        const onError = (error: Error) => {
+            console.log('Error', error);
+            if (error.message && error.message.toLowerCase().includes('disconnected')) {
+                alert('Connection lost. Please check your network and try again.');
+                setCallStatus(CallStatus.FINISHED);
+            }
+        };
 
         vapi.on('call-start', onCallStart);
         vapi.on('call-end', onCallEnd);
@@ -59,6 +67,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
         vapi.on('error', onError);
         vapi.on('speech-start', onSpeechStart);
         vapi.on('speech-end', onSpeechEnd);
+        // Removed transport-state-changed event listener
 
         return () => {
             vapi.off('call-start', onCallStart);
@@ -67,6 +76,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
             vapi.off('error', onError);
             vapi.off('speech-start', onSpeechStart);
             vapi.off('speech-end', onSpeechEnd);
+            // Removed transport-state-changed event listener
         }
     }, []);
 
